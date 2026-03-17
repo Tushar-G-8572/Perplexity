@@ -3,6 +3,9 @@ dotenv.config();
 import userModel from "../models/user.model.js";
 import jwt from 'jsonwebtoken';
 import { sendEmail } from "../services/email.service.js";
+// import crypto from "crypto";
+// import redis from '../config/cache.js';
+// import bcrypt from 'bcrypt'
 
 export async function registerController(req, res, next) {
     const { username, email, password } = req.body;
@@ -239,4 +242,143 @@ export async function getMe(req,res) {
 }
 
 }
+
+// function generateOTP(){
+//     return crypto.randomInt(100000,999999).toString();
+// } 
+
+// export async function resetPassword(req, res) {
+//   try {
+//     const { email } = req.body;
+
+//     const user = await userModel.findOne({ email });
+
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//         success: false,
+//       });
+//     }
+
+//     // ✅ Generate OTP
+//     const otp = generateOTP();
+
+//     // ✅ Hash OTP
+//     const hashedOTP = await bcrypt.hash(otp, 10);
+
+//     // ✅ Store OTP in Redis (5 min expiry)
+//     await redis.set(
+//             `otp:${email}`,
+//             JSON.stringify({
+//                 otp:hashedOTP
+//             }),
+//             "EX",300
+//         )
+
+//     // ✅ Send Email
+//     await sendEmail({
+//       to: email,
+//       subject: "Reset Password OTP",
+//       html: `
+//       <div style="font-family: Arial, sans-serif; padding:20px;">
+        
+//         <h2 style="color:#333;">Reset Your Password</h2>
+
+//         <p>Hello <strong>${user.username || "User"}</strong>,</p>
+
+//         <p>We received a request to reset your password.</p>
+
+//         <p>Your OTP for password reset is:</p>
+
+//         <div style="
+//             font-size:28px;
+//             letter-spacing:5px;
+//             font-weight:bold;
+//             background:#f4f4f4;
+//             padding:15px;
+//             width:fit-content;
+//             border-radius:8px;
+//         ">
+//           ${otp}
+//         </div>
+
+//         <p style="margin-top:15px;">
+//           This OTP will expire in <strong>5 minutes</strong>.
+//         </p>
+
+//         <p>If you did not request this, please ignore this email.</p>
+
+//         <br/>
+
+//         <p>Best Regards,<br/>Perplexity Team</p>
+
+//       </div>
+//       `,
+//     });
+
+//     return res.status(200).json({
+//       message: "OTP sent to email",
+//       success: true,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       message: "Reset password failed",
+//       success: false,
+//       error: error.message,
+//     });
+//   }
+// }
+
+// export async function resetPasswordFinal(req, res) {
+//   try {
+//     const { email, otp, newPassword } = req.body;
+
+//     const redisData = await redis.get(`otp:${email}`);
+
+//     if (!redisData) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "OTP expired",
+//       });
+//     }
+
+//     const { otp: hashedOTP } = JSON.parse(redisData);
+
+//     const isMatch = await bcrypt.compare(otp, hashedOTP);
+
+//     if (!isMatch) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid OTP",
+//       });
+//     }
+
+//     const user = await userModel.findOne({ email });
+
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     user.password = newPassword; // middleware will hash
+
+//     await user.save();
+
+//     await redis.del(`otp:${email}`);
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Password reset successful",
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: "Reset failed",
+//       error: error.message,
+//     });
+//   }
+// }
 
