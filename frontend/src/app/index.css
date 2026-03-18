@@ -1,1 +1,8 @@
 @import "tailwindcss";
+body{
+    overflow: hidden;
+}
+.chatlist {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #111827;
+}

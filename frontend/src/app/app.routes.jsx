@@ -3,7 +3,7 @@ import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
 import Dashboard from "../features/chat/pages/Dashboard";
 import Protected from "../features/auth/components/Protected";
-import Home from "../features/chat/components/Home";
+// import Home from "../features/chat/components/Home";
 
 
 export const router = createBrowserRouter([
@@ -21,8 +21,8 @@ export const router = createBrowserRouter([
         path: '/register',
         element: <Register />
     },
-    {
-        path:'/home',
-        element:<Home />
-    }
+    // {
+    //     path:'/home',
+    //     element:<Home />
+    // }
 ])

@@ -1,31 +1,32 @@
-import React,{useState} from 'react'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useChat } from '../hooks/useChat';
 import { useEffect } from 'react';
 
-import Sidebar from '../components/SideBar';
-import Home from '../components/Home';
-import ChatPage from '../components/Chatpage';
+import Sidebar from '../components/Sidebar.jsx';
+import Home from './Home.jsx';
+import ChatPage from '../components/ChatPage.jsx';
+
 
 
 const Dashboard = () => {
- const user = useSelector(state => state.auth.user);
   const chat = useChat();
   const [chatStarted, setChatStarted] = useState(false);
 
-  useEffect(()=>{
+  useEffect(() => {
     chat.initializeSocketConnection();
-  })
+  }, [])
 
- console.log(user);
+
   return (
-    <div className="flex">
-      <Sidebar />
-
-      <div className="flex-1">
+    <section className='bg-gray-950 text-gray-200 h-screen border-0 w-full'>
+      <div className="main w-full h-screen flex px-2 py-1 gap-1 ">
+        <Sidebar />
         {chatStarted ? <ChatPage /> : <Home />}
       </div>
-    </div>
+
+    </section>
+
   )
 }
 

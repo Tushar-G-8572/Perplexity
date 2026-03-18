@@ -22,7 +22,7 @@ export async function chatMessageController(req,res) {
         role:'user'
     })
 
-    const messages = await messageModel.find({chat:chatId})
+    const messages = await messageModel.find({chat:chatId || chat._id})
     // console.log(messages)
         
     const aiResponce = await generateResponce(messages);
