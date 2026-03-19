@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux';
 import { useChat } from '../hooks/useChat';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';import { MdGroupAdd } from "react-icons/md";
 
 
 const Home = ({ setChatStarted }) => {
@@ -43,7 +43,7 @@ const Home = ({ setChatStarted }) => {
                     <h1 className='font-semibold text-2xl '>Perplexity</h1>
                 </div>
                 <div className="links px-4 py-2 hover:bg-zinc-800 rounded-xl cursor-pointer ">
-                    <h4 className='text-xl font-medium'>Group Chat</h4>
+                    <h4 className='text-3xl font-medium'><MdGroupAdd /></h4>
                 </div>
             </div>
             <div className="flex h-4/5 w-full flex-col justify-center gap-4 items-center">
@@ -52,8 +52,6 @@ const Home = ({ setChatStarted }) => {
                 </h1>
 
                 <div className="search w-3/5 flex items-center text-center px-4 py-2 bg-gray-800 rounded-3xl">
-
-                    <h4 className='text-xl mr-2 cursor-pointer '>➕</h4>
 
                     <textarea
                         rows={1}
@@ -64,11 +62,9 @@ const Home = ({ setChatStarted }) => {
                         className='w-full bg-transparent font-sans px-2 border-0 outline-0 py-2 resize-none overflow-hidden'
                     />
 
-                    <h4 className='text-xl mx-2 cursor-pointer '>🎙️</h4>
 
                     <div className='rounded-md  bg-gray-900'>
-                        {/* <h4 className='px-3 py-2 text-xl'>⬆️</h4> */}
-                        <button onClick={handleSubmit} className='px-4 cursor-pointer rounded-md py-2 text-md font-md hover:bg-blue-600 '>send</button>
+                        <button onClick={handleSubmit} className='px-6 cursor-pointer rounded-md py-2 text-md font-md hover:bg-blue-600 '>send</button>
                     </div>
 
                 </div>

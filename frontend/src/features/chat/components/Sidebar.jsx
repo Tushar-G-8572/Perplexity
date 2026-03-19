@@ -3,6 +3,22 @@ import { useSelector } from 'react-redux';
 import { useChat } from '../hooks/useChat';
 import { useEffect } from 'react';
 import { replace, useNavigate } from 'react-router'
+import { BsPerplexity } from "react-icons/bs";
+import { CgSidebarOpen } from "react-icons/cg";
+import { IoSearchSharp } from "react-icons/io5";
+import { IoIosArrowDropdown } from "react-icons/io";
+
+export const formatChatTitle = (title = "") => {
+  const clean = title
+    .replace(/\*\*/g, "")
+    .replace(/`/g, "")
+    .replace(/"/g, "")
+    .replace(/#/g, "")
+    .replace(/\n/g, " ")
+    .trim();
+
+  return clean.length > 40 ? clean.slice(0, 40) + "..." : clean;
+};
 
 const Sidebar = () => {
 
@@ -32,10 +48,10 @@ const Sidebar = () => {
 
                 <div className="icons w-full px-4 py-2 flex justify-between">
                     <div className='hover:bg-gray-800 flex justify-center p-1 rounded-2xl'>
-                        <h4 className='text-4xl cursor-pointer'>🔥</h4>
+                        <h4 className='text-4xl cursor-pointer'><BsPerplexity /></h4>
                     </div>
                     <div className='hover:bg-gray-800 flex justify-center p-1 rounded-2xl'>
-                        <h4 className='text-3xl cursor-pointer'>🛝</h4>
+                        <h4 className='text-3xl cursor-pointer'><CgSidebarOpen /></h4>
                     </div>
                 </div>
 
@@ -46,7 +62,7 @@ const Sidebar = () => {
                     </div>
 
                     <div className='flex gap-2 border-b-2 hover:bg-gray-800 px-4 py-2 rounded-2xl cursor-pointer'>
-                        <h4>🔍</h4>
+                        <h4 className='text-2xl'><IoSearchSharp /></h4>
                         <h4>Search Chat</h4>
                     </div>
                 </div>
@@ -57,7 +73,7 @@ const Sidebar = () => {
 
                 <div className='flex gap-2 items-center mb-3'>
                     <h4 className='font-bold'>Your Chats</h4>
-                    <h4>⬇️</h4>
+                    <h4 className='text-2xl'><IoIosArrowDropdown /></h4>
                 </div>
 
                 <ul className='flex flex-col gap-2'>
@@ -66,7 +82,7 @@ const Sidebar = () => {
                             key={index}
                             className='px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-800 transition'
                         >
-                            {chat.title}
+                            <h4>{formatChatTitle(chat.title)}</h4>
 
                         </li>
                     ))}
