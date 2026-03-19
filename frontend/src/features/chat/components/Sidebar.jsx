@@ -10,6 +10,7 @@ const Sidebar = () => {
     const chat = useChat();
 
     const chats = useSelector((state) => state.chat.chats)
+    // console.log(chats)
     const currentChatId = useSelector((state) => state.chat.currentChatId)
 
     const {handleNewChat} = chat

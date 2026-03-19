@@ -13,6 +13,7 @@ export const useChat = () => {
             dispatch(setLoading(true))
             const data = await sendMessage({ message, chatId });
             const { aiMessage, chat } = data;
+            const newChatId = chat._id;
             dispatch(createNewChat({
                 chatId: chat._id,
                 title: chat.title
@@ -28,6 +29,7 @@ export const useChat = () => {
                 role: aiMessage.role,
             }))
             dispatch(setCurrentChatId(chat._id))
+            return newChatId;
         } catch (err) {
             dispatch(setError(err))
         } finally {

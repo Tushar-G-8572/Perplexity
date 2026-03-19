@@ -8,11 +8,12 @@ const ChatPage = () => {
     const [chatInput, setChatInput] = useState('')
     const { chatId } = useParams();
     const location = useLocation();
-    console.log(chatId);
+    // console.log(chatId);
 
     const chat = useChat();
     const { handleSendMessage, handleOpenChat } = chat;
     const chats = useSelector(state => state.chat.chats[chatId])
+    console.log(chats)
     useEffect(() => {
         handleOpenChat(chatId)
     }, [chatId])
@@ -58,9 +59,9 @@ const ChatPage = () => {
 
                     <div className="flex-1 overflow-y-auto px-10 py-4 flex flex-col gap-4">
 
-                        {messages.map((msg) => (
+                        {messages.map((msg,idx) => (
                             <div
-                                key={msg._id}
+                                key={idx}
                                 className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                             >
                                 <div

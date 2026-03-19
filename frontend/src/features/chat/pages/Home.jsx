@@ -23,24 +23,17 @@ const Home = ({ setChatStarted }) => {
 
         const trimmedMessage = chatInput.trim();
         if (!trimmedMessage) return;
-
-        const res = await chat.handleSendMessage({
+        
+        setChatInput('');
+        const newChatId = await chat.handleSendMessage({
             message: trimmedMessage,
             chatId: currentChatId
         });
-
-        const newChatId = res?.chat?._id;
-
+        console.log(newChatId);
         if (newChatId) {
-            navigate(`/chat/${newChatId}`, {
-                state: {
-                    firstMessage: trimmedMessage,
-                    aiMessage: res?.aiMessage
-                }
-            });
+            navigate(`/chat/${newChatId}`);
         }
 
-        setChatInput('');
     }
 
     return (
