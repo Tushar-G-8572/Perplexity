@@ -1,17 +1,19 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
 import { useChat } from '../hooks/useChat';
-import { useState } from 'react';
+import { useState ,useEffect} from 'react';
 import { useNavigate } from 'react-router';import { MdGroupAdd } from "react-icons/md";
 
 
-const Home = ({ setChatStarted }) => {
+const Home = () => {
     const navigate = useNavigate();
     const [chatInput, setChatInput] = useState('');
     const chat = useChat();
 
     const chats = useSelector((state) => state.chat.chats);
+
     const currentChatId = useSelector((state) => state.chat.currentChatId)
+
 
     const handleInput = (e) => {
         e.target.style.height = "auto";
@@ -51,7 +53,7 @@ const Home = ({ setChatStarted }) => {
                     Hello Tushar how can I help you today?
                 </h1>
 
-                <div className="search w-3/5 flex items-center text-center px-4 py-2 bg-gray-800 rounded-3xl">
+                <div className="search w-3/5 flex items-center text-center px-4 py-2 bg-gray-900 rounded-3xl">
 
                     <textarea
                         rows={1}
@@ -63,8 +65,8 @@ const Home = ({ setChatStarted }) => {
                     />
 
 
-                    <div className='rounded-md  bg-gray-900'>
-                        <button onClick={handleSubmit} className='px-6 cursor-pointer rounded-md py-2 text-md font-md hover:bg-blue-600 '>send</button>
+                    <div className='rounded-md  bg-gray-950'>
+                        <button onClick={handleSubmit} className='px-6 cursor-pointer rounded-md py-2 text-md font-md hover:bg-gray-800 active:scale-2 '>send</button>
                     </div>
 
                 </div>

@@ -26,6 +26,7 @@ export async function chatMessageController(req,res) {
     // console.log(messages)
         
     const aiResponce = await generateResponce(messages);
+    console.log(aiResponce);
 
     const aiMessage = await messageModel.create({
         chat:chatId || chat._id,
@@ -45,7 +46,7 @@ export async function getAllChatsController(req,res) {
     try{
         const userId = req.user.id;
         
-        const chats = await chatModel.find({user:userId});
+        const chats = await chatModel.find({user:userId}).sort({createdAt:-1});
 
         return res.status(200).json({message:"all chats feteched Successfully",
             chats

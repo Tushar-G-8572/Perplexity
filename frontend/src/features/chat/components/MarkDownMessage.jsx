@@ -23,8 +23,8 @@ const MarkdownMessage = ({ content }) => {
   return (
     <div
       style={{
-        maxWidth: "720px",        // ⭐ VERY IMPORTANT READABLE WIDTH
-        lineHeight: "1.75",
+        maxWidth: "920px",        // ⭐ VERY IMPORTANT READABLE WIDTH
+        lineHeight: "1.85",
         fontSize: "15.5px",
         color: "#e5e7eb",
         position: "relative"
@@ -35,8 +35,8 @@ const MarkdownMessage = ({ content }) => {
         onClick={() => handleCopy(content)}
         style={{
           position: "absolute",
-          bottom: "5px",
-          right: "0",
+          bottom: "-30px",
+          right: "-5px",
           background: "#111827",
           border: "1px solid #374151",
           padding: "6px 10px",

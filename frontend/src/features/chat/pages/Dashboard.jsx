@@ -19,7 +19,7 @@ const Dashboard = () => {
   }, [])
 
    return (
-    <section className='bg-gray-950 text-gray-200 h-screen border-0 w-full'>
+    <section className='bg-black text-gray-200 h-screen border-0 w-full'>
       <div className="main w-full h-screen flex px-2 py-1 gap-1 ">
         <Sidebar />
         <Home />   

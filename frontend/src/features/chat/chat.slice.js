@@ -5,7 +5,7 @@ const chatSlice = createSlice({
     initialState: {
         chats: {},
         currentChatId: null,
-        isLoading: null,
+        isLoading: false,
         error: null
     },
     reducers: {
@@ -24,7 +24,7 @@ const chatSlice = createSlice({
         },
         addMessages: (state, action) => {
             const { chatId, messages } = action.payload
-            state.chats[chatId].messages.push(...messages)
+            state.chats[chatId].messages.push(...messages)            
         },
         setChats: (state, action) => {
             state.chats = action.payload

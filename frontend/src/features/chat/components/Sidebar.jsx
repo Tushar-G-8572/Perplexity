@@ -47,8 +47,8 @@ const Sidebar = () => {
             <div className="flex-shrink-0">
 
                 <div className="icons w-full px-4 py-2 flex justify-between">
-                    <div className='hover:bg-gray-800 flex justify-center p-1 rounded-2xl'>
-                        <h4 className='text-4xl cursor-pointer'><BsPerplexity /></h4>
+                    <div onClick={()=>{handleNewChats()}} className='hover:bg-gray-800 flex justify-center p-1 rounded-2xl'>
+                        <h4  className='text-4xl cursor-pointer'><BsPerplexity /></h4>
                     </div>
                     <div className='hover:bg-gray-800 flex justify-center p-1 rounded-2xl'>
                         <h4 className='text-3xl cursor-pointer'><CgSidebarOpen /></h4>
