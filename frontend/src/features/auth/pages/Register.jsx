@@ -27,6 +27,13 @@ const Register = () => {
     const user = useSelector(state => state.auth.user);
     const loading = useSelector(state => state.auth.loading);
 
+
+    if(loading){
+        return (
+            <h1>Loading....</h1>
+        )
+    }
+
     if(!loading && user){
         return <Navigate to='/' replace />
     }

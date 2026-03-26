@@ -1,139 +1,125 @@
-import { initializeSocketConnection } from "../service/chat.socket";
 import { useDispatch } from "react-redux";
-import { getChats, getMessages, deleteChats, sendMessage } from '../service/chat.api.js'
-import { setError, setLoading, setChats, setCurrentChatId, addMessages, addNewMessage, createNewChat } from "../chat.slice";
+import { getSocket} from "../service/chat.socket.js";
+import { initChat, getChats, getMessages } from "../service/chat.api.js";
+import {
+  setError,
+  setLoading,
+  setChats,
+  setCurrentChatId,
+  addMessages,
+  addNewMessage,
+  createNewChat,
+  addStreamingMessage,
+  appendStreamChunk,
+  finalizeAiMessage,
+} from "../chat.slice";
 
 export const useChat = () => {
+  const dispatch = useDispatch();
 
-    const dispatch = useDispatch();
+  // ── MAIN: send a message (handles both new chat and follow-up)
+  async function handleSendMessage({ message, chatId }) {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
 
+      // ── Step 1: HTTP call → creates chat if needed, saves user message
+      // Returns { chatId, title } immediately (no AI wait!)
+      const { chatId: resolvedChatId, title } = await initChat({ message, chatId });
 
-    // async function handleSendMessage({ message, chatId }) {
-    //     try {
-    //         dispatch(setLoading(true))
-    //         const data = await sendMessage({ message, chatId });
-    //         const { aiMessage, chat } = data;
-    //         const newChatId = chat._id;
-    //         dispatch(createNewChat({
-    //             chatId: chat._id,
-    //             title: chat.title
-    //         }))
-    //         dispatch(addNewMessage({
-    //             chatId: chat._id,
-    //             content: message,
-    //             role: 'user'
-    //         }))
-    //         dispatch(addNewMessage({
-    //             chatId: chat._id,
-    //             content: aiMessage.content,
-    //             role: aiMessage.role,
-    //         }))
-    //         dispatch(setCurrentChatId(chat._id))
-    //         return newChatId;
-    //     } catch (err) {
-    //         dispatch(setError(err))
-    //     } finally {
-    //         dispatch(setLoading(false));
-    //     }
+      // ── Step 2: Update Redux with chat + user message right away
+      dispatch(createNewChat({ chatId: resolvedChatId, title }));
+      dispatch(addNewMessage({ chatId: resolvedChatId, content: message, role: "user" }));
+      dispatch(setCurrentChatId(resolvedChatId));
 
-    // }
+      // ── Step 3: Add an empty AI message placeholder ("Thinking...")
+      dispatch(addStreamingMessage({ chatId: resolvedChatId }));
+      dispatch(setLoading(false)); // stop the global spinner; streaming takes over
 
-    async function handleSendMessage({ message, chatId }) {
-        try {
+      // ── Step 4: Open socket and start streaming
+      const socket = getSocket();
 
-            dispatch(setLoading(true));
+      // Clean up any old listeners first (important to avoid duplicate handlers
+      // if the user sends multiple messages quickly)
+      socket.off("chat:chunk");
+      socket.off("chat:stream_end");
+      socket.off("chat:error");
 
-            const data = await sendMessage({ message, chatId });
+      // Tell the backend to start streaming for this chatId
+      socket.emit("chat:start_stream", { chatId: resolvedChatId });
 
-            if (!data || !data.chat || !data.chat._id) {
-                throw new Error("Invalid chat response");
-            }
+      // ── Step 5a: Receive chunks → keep appending to the AI placeholder
+      socket.on("chat:chunk", ({ chatId: incomingChatId, chunk }) => {
+        dispatch(appendStreamChunk({ chatId: incomingChatId, chunk }));
+      });
 
-            const { aiMessage, chat } = data;
-            const newChatId = chat._id;
+      // ── Step 5b: Stream finished → finalise the message in Redux
+      socket.on("chat:stream_end", ({ chatId: incomingChatId }) => {
+        dispatch(finalizeAiMessage({ chatId: incomingChatId }));
+        socket.off("chat:chunk");
+        socket.off("chat:stream_end");
+        socket.off("chat:error");
+      });
 
-            // ⭐ CREATE CHAT ONLY IF NEW CHAT
-            if (!chatId) {
-                dispatch(createNewChat({
-                    chatId: newChatId,
-                    title: chat.title
-                }));
-            }
+      // ── Step 5c: Handle errors gracefully
+      socket.on("chat:error", ({ chatId: incomingChatId, message: errMsg }) => {
+        dispatch(finalizeAiMessage({ chatId: incomingChatId })); // stop "Thinking..."
+        dispatch(setError(errMsg));
+        socket.off("chat:chunk");
+        socket.off("chat:stream_end");
+        socket.off("chat:error");
+      });
 
-            // ⭐ USER MESSAGE (optimistic)
-            dispatch(addNewMessage({
-                chatId: newChatId,
-                content: message,
-                role: "user"
-            }));
+      return resolvedChatId; // Home.jsx uses this to navigate
 
-            // ⭐ AI MESSAGE
-            dispatch(addNewMessage({
-                chatId: newChatId,
-                content: aiMessage?.content || "",
-                role: aiMessage?.role || "ai"
-            }));
-
-            dispatch(setCurrentChatId(newChatId));
-
-            return newChatId;
-
-        } catch (err) {
-            dispatch(setError(err.message || "Something went wrong"));
-        } finally {
-            dispatch(setLoading(false));
-        }
+    } catch (err) {
+      dispatch(setError(err.message || "Something went wrong"));
+      dispatch(setLoading(false));
     }
+  }
 
-    async function handleOpenChat(chatId,chats) {
-        // console.log("chats is",chats)
-        //  console.log(chats[ chatId ]?.messages.length)
-         if(chats?.messages.length === 0){
-             const data = await getMessages(chatId)
-             const { messages } = data
-                // console.log("messages is",messages)
-             const formattedMessages = messages.map(msg => ({
-                 content: msg.content,
-                 role: msg.role,
-                }))
-        
-                dispatch(addMessages({
-                    chatId,
-                    messages: formattedMessages,
-                }))
-            }
-        dispatch(setCurrentChatId(chatId))
+  // ── Load messages for a chat (called by ChatPage on mount)
+  async function handleOpenChat(chatId, chats) {
+    if (!chats || chats?.messages.length === 0) {
+      const data = await getMessages(chatId);
+      const formattedMessages = data.messages.map((msg) => ({
+        content: msg.content,
+        role: msg.role,
+      }));
+      dispatch(createNewChat({ chatId, title: data.title || "Chat" }));
+      dispatch(addMessages({ chatId, messages: formattedMessages }));
     }
+    dispatch(setCurrentChatId(chatId));
+  }
 
+  // ── Load all chats for the sidebar
+  async function handleGetChats() {
+    dispatch(setLoading(true));
+    const data = await getChats();
+    dispatch(
+      setChats(
+        data.chats.reduce((acc, chat) => {
+          acc[chat._id] = {
+            id: chat._id,
+            title: chat.title,
+            messages: [],
+            lastUpdated: chat.updatedAt,
+          };
+          return acc;
+        }, {})
+      )
+    );
+    dispatch(setLoading(false));
+  }
 
-    async function handleGetChats() {
-        dispatch(setLoading(true))
-        const data = await getChats()
-        const { chats } = data
-        dispatch(setChats(chats.reduce((acc, chat) => {
-            acc[chat._id] = {
-                id: chat._id,
-                title: chat.title,
-                messages: [],
-                lastUpdated: chat.updatedAt,
-            }
-            return acc
-        }, {})))
-        dispatch(setLoading(false))
-    }
+  async function handleNewChat() {
+    dispatch(setCurrentChatId(null));
+  }
 
-    async function handleNewChat() {
-        dispatch(setLoading(true))
-        dispatch(setCurrentChatId(null))
-        dispatch(setLoading(false));
-    }
-
-
-    return {
-        initializeSocketConnection,
-        handleSendMessage,
-        handleGetChats,
-        handleOpenChat,
-        handleNewChat
-    }
-}
+  return {
+    handleSendMessage,
+    handleGetChats,
+    handleOpenChat,
+    handleNewChat,
+  };
+};

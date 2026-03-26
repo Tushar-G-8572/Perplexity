@@ -30,6 +30,12 @@ const Login = () => {
         navigate('/');
     }
 
+    if(loading){
+        return (
+            <h1>Loading....</h1>
+        )
+    }
+
      if(user && !loading){
         return <Navigate to='/' replace />
     }

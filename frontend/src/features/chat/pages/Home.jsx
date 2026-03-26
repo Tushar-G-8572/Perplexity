@@ -1,15 +1,16 @@
-import React from 'react'
 import { useSelector } from 'react-redux';
 import { useChat } from '../hooks/useChat';
-import { useState ,useEffect} from 'react';
-import { useNavigate } from 'react-router';import { MdGroupAdd } from "react-icons/md";
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { MdGroupAdd } from "react-icons/md";
 
 
 const Home = () => {
     const navigate = useNavigate();
     const [chatInput, setChatInput] = useState('');
     const chat = useChat();
-
+    const user = useSelector((state)=> state.auth.user);
+    const loading = useSelector((state)=>state.chat.isLoading);
     const chats = useSelector((state) => state.chat.chats);
 
     const currentChatId = useSelector((state) => state.chat.currentChatId)
@@ -20,10 +21,17 @@ const Home = () => {
         e.target.style.height = e.target.scrollHeight + "px";
     };
 
+    if(loading){
+        return (
+            <h1>Loading....</h1>
+        )
+    }
+
     async function handleSubmit(e) {
         e.preventDefault();
 
         const trimmedMessage = chatInput.trim();
+        console.log(trimmedMessage)
         if (!trimmedMessage) return;
         
         setChatInput('');
@@ -65,8 +73,8 @@ const Home = () => {
                     />
 
 
-                    <div className='rounded-md  bg-gray-950'>
-                        <button onClick={handleSubmit} className='px-6 cursor-pointer rounded-md py-2 text-md font-md hover:bg-gray-800 active:scale-2 '>send</button>
+                    <div onClick={handleSubmit} className='rounded-md  bg-gray-950'>
+                        <button  className='px-6 cursor-pointer rounded-md py-2 text-md font-md hover:bg-gray-800 active:scale-2 '>send</button>
                     </div>
 
                 </div>

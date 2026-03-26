@@ -1,11 +1,13 @@
 import {io} from 'socket.io-client';
 
-export const initializeSocketConnection = ()=>{
-    const socket = io('http://localhost:4000',{
-        withCredentials:true
-    })
+let socket;
 
-    socket.on('connect',()=>{
-        console.log("Connected to Socket.IO Server");
-    })
+export function getSocket() {
+  if (!socket) {
+    socket = io("http://localhost:4000", {
+      withCredentials: true,
+      autoConnect: true,
+    });
+  }
+  return socket;
 }

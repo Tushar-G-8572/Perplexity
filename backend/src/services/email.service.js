@@ -1,43 +1,61 @@
 import dotenv from 'dotenv'
 dotenv.config();
-import nodemailer from "nodemailer";
+import {google} from 'googleapis';
 
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        type: 'OAuth2',
-        user: process.env.EMAIL_USER,
-        clientSecret: process.env.CLIENT_SECRET,
-        refreshToken: process.env.REFRESH_TOKEN,
-        clientId: process.env.CLIENT_ID
-    }
-})
+const OAuth2 = google.auth.OAuth2;
 
-export async function verifyMailServer() {
-    try {
-        await transporter.verify();
-        console.log("✅ Email server ready to send mail");
-    } catch (err) {
-        console.error("❌ Email server error:", err);
-    }
+const createGmailClient = ()=>{
+    const oauthClient = new OAuth2(
+        (process.env.CLIENT_ID || "").trim(),
+        (process.env.CLIENT_SECRET || "").trim(),
+        "https://developers.google.com/oauthplayground"
+    );
+
+    oauthClient.setCredentials({
+        refresh_token:(process.env.REFRESH_TOKEN || "").trim()
+    })
+
+    return google.gmail({version:'v1', auth:oauthClient})
+}
+
+
+const mailBody = (to,from,subject,message)=>{
+    const str = [
+        `To: ${to}`,
+        `From: ${from}`,
+        `Subject ${subject}`,
+        `MIME-Version: 1.0`,
+        `Content-Type: text/html; charset-utf8`,
+        '',
+        message
+    ].join('\n')
+
+    return Buffer.from(str)
+    .toString('base64')
+    .replace(/\+/g,'-')
+    .replace(/\//g,'_')
+    .replace(/=+$/,'')
 }
 
 export async function sendEmail({ to, subject, html, text }) {
     try {
 
         console.log("📩 Sending email to:", to);
+        const gmail = createGmailClient();
+        const rawMessage = mailBody(to,process.env.EMAIL_USER,subject,html || text);
 
-        const info = await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to,
-            subject,
-            html,
-            text
+        const info = await gmail.users.messages.send({
+            userId:'me',
+            requestBody:{
+                raw:rawMessage
+            }
         });
 
         console.log("✅ Email sent successfully:", info.messageId);
+        return { success:true , message:"Email Send"}
 
     } catch (error) {
         console.error("❌ Email Error:", error);
+        return {error:true , message: error.message}
     }
 }

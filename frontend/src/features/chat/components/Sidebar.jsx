@@ -2,11 +2,12 @@ import React from 'react'
 import { useSelector } from 'react-redux';
 import { useChat } from '../hooks/useChat';
 import { useEffect } from 'react';
-import { replace, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { BsPerplexity } from "react-icons/bs";
 import { CgSidebarOpen } from "react-icons/cg";
 import { IoSearchSharp } from "react-icons/io5";
 import { IoIosArrowDropdown } from "react-icons/io";
+import { MdOutlineAdd } from "react-icons/md";
 
 export const formatChatTitle = (title = "") => {
   const clean = title
@@ -28,6 +29,8 @@ const Sidebar = () => {
     const chats = useSelector((state) => state.chat.chats)
     // console.log(chats)
     const currentChatId = useSelector((state) => state.chat.currentChatId)
+    const loading = useSelector(state=>state.chat.isLoading);
+
 
     const {handleNewChat} = chat
     const handleNewChats = () => {
@@ -57,7 +60,7 @@ const Sidebar = () => {
 
                 <div className="chats border-t-2 border-gray-700 flex flex-col gap-3 w-full px-4 py-2">
                     <div onClick={() => { handleNewChats() }} className='flex gap-2 border-b-2 hover:bg-gray-800 px-4 py-2 rounded-2xl cursor-pointer'>
-                        <h4>➕</h4>
+                        <h4 className='text-2xl' ><MdOutlineAdd /></h4>
                         <h4>New Chat</h4>
                     </div>
 

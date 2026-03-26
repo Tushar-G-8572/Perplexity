@@ -3,6 +3,7 @@ import { ChatMistralAI } from "@langchain/mistralai"
 import { HumanMessage, SystemMessage, AIMessage, tool, createAgent } from 'langchain';
 import { searchContent } from "./search.service.js";
 import * as z from "zod";
+import { sendEmail } from "./email.service.js";
 
 const geminiModel = new ChatGoogleGenerativeAI({
   model: "gemini-flash-latest",
@@ -15,18 +16,18 @@ const mistralModel = new ChatMistralAI({
   apiKey: process.env.MISTRAL_API_KEY
 });
 
-// const emailTool = tool(
-//     sendEmail,
-//     {
-//         name: "emailTool",
-//         description: "Use this tool to send an email",
-//         schema: z.object({
-//             to: z.string().describe("The recipient's email address"),
-//             html: z.string().describe("The HTML content of the email"),
-//             subject: z.string().describe("The subject of the email"),
-//         })
-//     }
-// )
+const emailTool = tool(
+    sendEmail,
+    {
+        name: "emailTool",
+        description: "Use this tool to send an email",
+        schema: z.object({
+            to: z.string().describe("The recipient's email address"),
+            html: z.string().describe("The HTML content of the email"),
+            subject: z.string().describe("The subject of the email"),
+        })
+    }
+)
 
 const searchInternet = tool(
   searchContent,
@@ -47,14 +48,25 @@ const agent = createAgent({
 })
 
 
+
+
 export async function generateResponce(messages) {
+  const today = new Date().toISOString().split("T")[0];
   const response = await agent.invoke({
     messages: [
       new SystemMessage(`
-                You are a helpful and precise assistant for answering questions.
-                If you don't know the answer, say you don't know. 
-                If the question requires up-to-date information, use the "searchInternet" tool to get the latest information from the internet and then answer based on the search results.
-            `),
+You are a real-time news assistant.
+
+Today's date is ${today}.
+
+Whenever the user asks about war, politics, live events,
+always assume they want the latest current situation.
+
+Use the "searchInternet" tool to fetch the most recent updates.
+
+Do NOT ask for clarification about time.
+Always provide latest information.
+`),
       ...(messages.map(msg => {
         if (msg.role == "user") {
           return new HumanMessage(msg.content)
@@ -64,7 +76,38 @@ export async function generateResponce(messages) {
       }))
     ]
   })
-  return response.messages[ response.messages.length - 1 ].text;
+  return response.messages[response.messages.length - 1].text;
+}
+
+export async function generateResponseStream(messages) {
+  const today = new Date().toISOString().split("T")[0];
+
+  const formattedMessages = messages.map((msg) => {
+    if (msg.role === "user") return new HumanMessage(msg.content);
+    if (msg.role === "ai")   return new AIMessage(msg.content);
+  }).filter(Boolean);
+
+  // streamEvents v2 fires precise typed events
+  // We return the async iterable directly — no await needed
+  const eventStream = agent.streamEvents(
+    {
+      messages: [
+        new SystemMessage(`
+You are a real-time news assistant.
+Today's date is ${today}.
+Whenever the user asks about war, politics, live events,
+always assume they want the latest current situation.
+Use the "searchInternet" tool to fetch the most recent updates.
+Do NOT ask for clarification about time.
+Always provide latest information.
+        `),
+        ...formattedMessages,
+      ],
+    },
+    { version: "v2" } 
+  );
+
+  return eventStream;
 }
 
 export async function generateChatTitle(message) {
